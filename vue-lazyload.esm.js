@@ -1,5 +1,5 @@
 /*!
- * Vue-Lazyload.js v1.3.5
+ * Vue-Lazyload.js v2.0.1
  * (c) 2023 Awe <hilongjw@gmail.com>
  * Released under the MIT License.
  */
@@ -844,7 +844,7 @@ function Lazy(Vue) {
           observerOptions = _ref.observerOptions;
       classCallCheck(this, Lazy);
 
-      this.version = '"1.3.5"';
+      this.version = '"2.0.1"';
       this.mode = modeType.event;
       this.ListenerQueue = [];
       this.TargetIndex = 0;
@@ -1679,26 +1679,30 @@ var LazyImage = function LazyImage(lazyManager) {
         var onFinish = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop;
 
         if (this.state.attempt > this.options.attempt - 1 && this.state.error) {
-          if (!lazyManager.options.silent) console.log('VueLazyload log: ' + this.options.src + ' tried too more than ' + this.options.attempt + ' times');
+          if (!lazyManager.options.silent) {
+            console.log('VueLazyload log: ' + this.options.src + ' tried too more than ' + this.options.attempt + ' times');
+          }
           onFinish();
           return;
         }
         var src = this.options.src;
+        this.$emit('loading', { src: src });
         loadImageAsync({ src: src }, function (_ref) {
           var src = _ref.src;
 
           _this.renderSrc = src;
           _this.state.loaded = true;
+          _this.$emit('loaded', { src: src });
         }, function (e) {
           _this.state.attempt++;
           _this.renderSrc = _this.options.error;
           _this.state.error = true;
+          _this.$emit('error', { src: src, error: e });
         });
       }
     }
   };
 };
-
 LazyImage.install = function (Vue) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 

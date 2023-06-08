@@ -1,8 +1,4 @@
-import {
-  inBrowser,
-  loadImageAsync,
-  noop
-} from './util'
+import { inBrowser, loadImageAsync, noop } from './util'
 import Lazy from './lazy'
 
 const LazyImage = (lazyManager) => {
@@ -15,11 +11,15 @@ const LazyImage = (lazyManager) => {
       }
     },
     render (h) {
-      return h(this.tag, {
-        attrs: {
-          src: this.renderSrc
-        }
-      }, this.$slots.default)
+      return h(
+        this.tag,
+        {
+          attrs: {
+            src: this.renderSrc
+          }
+        },
+        this.$slots.default
+      )
     },
     data () {
       return {
@@ -60,7 +60,9 @@ const LazyImage = (lazyManager) => {
     },
     methods: {
       init () {
-        const { src, loading, error } = lazyManager._valueFormatter(this.src)
+        const { src, loading, error } = lazyManager._valueFormatter(
+          this.src
+        )
         this.state.loaded = false
         this.options.src = src
         this.options.error = error
@@ -72,30 +74,49 @@ const LazyImage = (lazyManager) => {
       },
       checkInView () {
         this.getRect()
-        return inBrowser &&
-                    (this.rect.top < window.innerHeight * lazyManager.options.preLoad && this.rect.bottom > 0) &&
-                    (this.rect.left < window.innerWidth * lazyManager.options.preLoad && this.rect.right > 0)
+        return (
+          inBrowser &&
+                    this.rect.top <
+                        window.innerHeight * lazyManager.options.preLoad &&
+                    this.rect.bottom > 0 &&
+                    this.rect.left <
+                        window.innerWidth * lazyManager.options.preLoad &&
+                    this.rect.right > 0
+        )
       },
       load (onFinish = noop) {
-        if ((this.state.attempt > this.options.attempt - 1) && this.state.error) {
-          if (!lazyManager.options.silent) console.log(`VueLazyload log: ${this.options.src} tried too more than ${this.options.attempt} times`)
+        if (
+          this.state.attempt > this.options.attempt - 1 &&
+                    this.state.error
+        ) {
+          if (!lazyManager.options.silent) {
+            console.log(
+              `VueLazyload log: ${this.options.src} tried too more than ${this.options.attempt} times`
+            )
+          }
           onFinish()
           return
         }
         const src = this.options.src
-        loadImageAsync({ src }, ({ src }) => {
-          this.renderSrc = src
-          this.state.loaded = true
-        }, e => {
-          this.state.attempt++
-          this.renderSrc = this.options.error
-          this.state.error = true
-        })
+        this.$emit('loading', { src })
+        loadImageAsync(
+          { src },
+          ({ src }) => {
+            this.renderSrc = src
+            this.state.loaded = true
+            this.$emit('loaded', { src })
+          },
+          (e) => {
+            this.state.attempt++
+            this.renderSrc = this.options.error
+            this.state.error = true
+            this.$emit('error', { src, error: e })
+          }
+        )
       }
     }
   }
 }
-
 LazyImage.install = (Vue, options = {}) => {
   const LazyClass = Lazy(Vue)
   const lazy = new LazyClass(options)
