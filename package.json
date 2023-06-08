@@ -1,6 +1,6 @@
 {
     "name": "@jetthai/vue-lazyload",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "Th1games tweak lazyload module.",
     "main": "vue-lazyload.js",
     "module": "vue-lazyload.esm.js",
